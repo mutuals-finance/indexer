@@ -9,3 +9,11 @@ yarn-error.log*
 .pnp.js
 
 .vscode/*
+
+/lib
+/builds
+
+/**Versions.json
+
+# IDE files
+/.idea

@@ -1,0 +1,6 @@
+onlyBuiltDependencies:
+  - '@apollo/protobufjs'
+  - bufferutil
+  - es5-ext
+  - keccak
+  - utf-8-validate
