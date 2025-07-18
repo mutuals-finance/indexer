@@ -3,13 +3,17 @@
   "private": true,
   "scripts": {
     "build": "cross-env clean && tsc",
-    "clean": "del lib"
+    "clean": "del lib",
+    "gen": "node scripts/genFiles.js"
   },
   "dependencies": {
+    "@belopash/typeorm-store": "^1.5.0",
+    "@subsquid/big-decimal": "^1.0.0",
     "@subsquid/evm-abi": "^0.3.0",
     "@subsquid/evm-codec": "^0.3.0",
     "@subsquid/evm-processor": "^1.21.1",
     "@subsquid/graphql-server": "^4.7.0",
+    "@subsquid/logger": "^1.4.0",
     "@subsquid/typeorm-migration": "^1.3.0",
     "@subsquid/typeorm-store": "^1.5.1",
     "@subsquid/util-internal": "^3.2.0",

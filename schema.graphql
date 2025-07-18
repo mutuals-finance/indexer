@@ -1,10 +1,228 @@
-type Transfer @entity {
+type Account @entity {
+  # account address
   id: ID!
-  network: String! @index
-  block: Int! @index
-  timestamp: DateTime! @index
-  from: String! @index
-  to: String! @index
-  value: BigInt!
-  txHash: String! @index
+  # account address
+  address: String!
+  # creation timestamp
+  timestamp: DateTime!
+  # creation block number
+  blockNumber: Int!
+  # contract or EOA
+  isEOA: Boolean! @index
+  # all time number of transactions
+  txCount: Int!
+  # pools this account represents if account is a pool contract
+  pools: [Pool!] @derivedFrom(field: "account")
+  # pools where account is a recipient
+  # pools: [Pool!] @derivedFrom(field: "recipient")
+  # token balances of the account
+  balances: [TokenBalance!] @derivedFrom(field: "holder")
+}
+
+type PoolFactory @entity {
+  # { chain id }-{ contract address }
+  id: ID!
+  # contract address
+  address: String!
+  # chain ID
+  chainId: Int!
+  # creation timestamp
+  timestamp: DateTime!
+  # creation block number
+  blockNumber: Int!
+  # amount of pools created
+  poolCount: Int!
+  # amount of transactions all time
+  txCount: Int!
+  # current owner of the factory
+  ownerId: ID!
+  owner: Account!
+}
+
+type TokenBalance @entity {
+  # {chain id }-{ holder address }-{ token address }
+  id: ID!
+  # chain ID
+  chainId: Int!
+  # token
+  tokenID: ID!
+  token: Token!
+  # token owner
+  holderID: ID!
+  holder: Account!
+  # token balance
+  amount: BigDecimal!
+}
+
+type Token @entity {
+  # { chain id }-{ token address }
+  id: ID!
+  # token address
+  address: String!
+  # chain ID
+  chainId: Int!
+  # creation timestamp
+  timestamp: DateTime!
+  # creation block number
+  blockNumber: Int!
+  # token symbol
+  symbol: String!
+  # token name
+  name: String!
+  # token decimals
+  decimals: Int!
+  # token total supply
+  totalSupply: BigInt!
+  # transactions across all pools that include this token
+  txCount: Int!
+  # number of pools containing this token
+  poolCount: BigInt!
+}
+
+type Pool @entity {
+  # { chain id }-{ pool address }
+  id: ID!
+  # pool address
+  address: String!
+  # chain ID
+  chainId: Int!
+  # pool factory that created this pool
+  poolFactoryId: ID!
+  poolFactory: PoolFactory!
+  # account of this pool
+  accountId: ID!
+  account: Account!
+  # name
+  name: String!
+  # description
+  description: String!
+  # logo
+  logo: String!
+  # creation timestamp
+  timestamp: DateTime!
+  # creation block number
+  blockNumber: Int!
+  # all time number of transactions
+  txCount: Int!
+  # current owner of the factory
+  ownerId: ID!
+  owner: Account!
+  # daily snapshots of pool token balances
+  dayBalance: [PoolDayBalance!]! @derivedFrom(field: "pool")
+  # hourly snapshots of pool token balances
+  hourBalance: [PoolHourBalance!]! @derivedFrom(field: "pool")
+  # deposit transactions
+  deposits: [Deposit!]! @derivedFrom(field: "pool")
+  # withdraw transactions
+  withdrawals: [Withdrawal!]! @derivedFrom(field: "pool")
+}
+
+type Tx @entity {
+  # txn hash
+  id: ID!
+  # creation timestamp
+  timestamp: DateTime!
+  # creation block number
+  blockNumber: Int!
+  # gas used during txn execution
+  gasUsed: BigInt!
+  gasPrice: BigInt!
+  # derived values
+  deposits: [Deposit]! @derivedFrom(field: "transaction")
+  withdrawals: [Withdrawal]! @derivedFrom(field: "transaction")
+}
+
+type Deposit @entity {
+  # { transaction hash }-{ index in deposits transaction array }
+  id: ID!
+  # which txn the mint was included in
+  transactionId: ID!
+  transaction: Tx!
+  # time of txn
+  timestamp: DateTime!
+  # pool that receives deposit
+  poolId: ID!
+  pool: Pool!
+  # allow indexing by tokens
+  tokenId: ID!
+  token: Token!
+  # the address that deposited the token
+  from: String!
+  # the address that received the token (the pool)
+  to: String!
+  # txn origin
+  origin: String! # the EOA that initiated the txn
+  # deposit amount
+  amount: BigInt!
+  # order within the txn
+  logIndex: Int
+}
+
+type Withdrawal @entity {
+  # { transaction hash }-{ index in withdrawals transaction array }
+  id: ID!
+  # txn burn was included in
+  transactionId: ID!
+  transaction: Tx!
+  # pool position is within
+  poolId: ID!
+  pool: Pool!
+  # allow indexing by tokens
+  tokenId: ID!
+  token: Token!
+  # need this to pull recent txns for specific token or pool
+  timestamp: DateTime!
+  # sender of the withdrawal
+  from: String!
+  # recipient of the withdrawal
+  to: String!
+  # txn origin
+  origin: String! # the EOA that initiated the txn
+  # withdrawn amount
+  amount: BigInt!
+  # position within the transactions
+  logIndex: Int
+}
+
+###############################
+###### Pool Timeseries #####
+###############################
+type PoolDayBalance @entity {
+  # { chain ID }-{ pool address }-{ token address }-{ date (rounded to current day) }
+  id: ID!
+  # timestamp rounded to current day by dividing by 86400
+  date: DateTime!
+  # pointer to pool
+  poolId: ID!
+  pool: Pool!
+  # pointer to token
+  tokenId: ID!
+  token: Token!
+  # last token balance in token units
+  amount: BigInt!
+  # timestamp in which the token balance was last modified
+  timestamp: BigInt!
+  # block number in which the token balance was last modified
+  blockNumber: BigInt!
+}
+
+type PoolHourBalance @entity {
+  # { chain ID }-{ pool address }-{ token address }-{ date (rounded to current hour) }
+  id: ID!
+  # chain ID
+  chainId: Int!
+  # timestamp rounded to current hour by dividing by 3600
+  date: DateTime!
+  # pointer to pool
+  poolId: ID!
+  pool: Pool!
+  # pointer to token
+  tokenId: ID!
+  token: Token!
+  # last token balance in token units
+  amount: BigInt!
+  # timestamp in which the token balance was last modified
+  timestamp: BigInt!
+  # block number in which the token balance was last modified
+  blockNumber: BigInt!
 }
