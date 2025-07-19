@@ -42,7 +42,7 @@ function generateSquidJson(networks) {
         commands: {
             clean: {
                 description: "delete all build artifacts",
-                cmd: ["npx", "--yes", "rimraf", "lib"],
+                cmd: ["npx", "--yes", "del-cli", "lib"],
             },
             build: {
                 description: "Build the squid project",
@@ -68,7 +68,7 @@ function generateSquidJson(networks) {
             },
             "migration:clean": {
                 description: "Clean the migrations folder",
-                cmd: ["npx", "--yes", "rimraf", "./db/migrations"],
+                cmd: ["npx", "--yes", "del-cli", "./db/migrations"],
             },
             migration: {
                 deps: ["build"],
@@ -120,7 +120,7 @@ function generateSquidJson(networks) {
             bump: {
                 description: "Bump @subsquid packages to the latest versions",
                 deps: ["check-updates"],
-                cmd: ["npm", "i", "-f"],
+                cmd: ["pnpm", "i", "-f"],
             },
             open: {
                 description: "Open a local browser window",

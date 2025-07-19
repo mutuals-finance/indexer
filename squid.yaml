@@ -1,15 +1,17 @@
 manifestVersion: subsquid.io/v0.1
-name: mutuals-indexer
+name: mutuals-squid
 version: 1
-description: 'A squid that indexes USDC transfers on ETH and BSC'
-build:
+description: Mutuals Squid
+build: {}
 deploy:
   addons:
-    postgres:
-    rpc:
-      - eth-holesky.http # RPC proxy URL will be supplied via the RPC_HOLESKY_HTTP env variable
+    postgres: {}
   processor:
     - name: holesky-processor
-      cmd: [ "sqd", "process:prod:holesky" ]
+      cmd:
+        - sqd
+        - process:prod:holesky
   api:
-    cmd: [ "sqd", "serve:prod" ]
+    cmd:
+      - sqd
+      - serve:prod
