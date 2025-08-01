@@ -39,11 +39,10 @@ export class CreatePoolAction extends BasePoolAction<CreatePoolActionData> {
             name: `Pool name`,
             description: `Pool description`,
             logo: '',
-            timestamp: new Date(this.block.timestamp),
-            blockNumber: this.block.height,
-            txCount: 0,
-            ownerId: ownerId,
+            ownerId,
             owner,
+            ...this.updatedAt,
+            ...this.createdAt
         })
 
         await this.store.insert(pool)

@@ -1,21 +1,31 @@
 import {Pool, Token} from '../model'
 import {Action} from './base'
+import {createTokenId} from "../utils/ids";
+import {config} from "../main";
 
 export interface CreateTokenActionData {
-    tokenId: string
-    address: string
-    decimals: number
+    tokenAddress: string
     symbol: string
+    name: string
+    decimals: number
+    logo?: string | null
+    thumbnail?: string | null
+    validated?: number
+    possibleSpam?: boolean
 }
 
 export class CreateTokenAction extends Action<CreateTokenActionData> {
     async perform() {
-        const decimals = this.data.decimals
-        const symbol = this.data.symbol
+        const {tokenAddress, ...data} = this.data
+        const tokenId = createTokenId(this.data.tokenAddress)
+
         const token = new Token({
-            id: this.data.tokenId,
-            decimals,
-            symbol
+            id: tokenId,
+            address: tokenAddress,
+            chainId: config.chainId,
+            ...data,
+            ...this.updatedAt,
+            ...this.createdAt
         })
 
         await this.store.upsert(token)
@@ -32,9 +42,9 @@ export interface TransferTokenActionData {
 export class TransferTokenAction extends Action<TransferTokenActionData> {
     async perform() {
         const token = await this.store.getOrFail(Token, this.data.tokenId)
-
-        const timestamp = new Date(this.block.timestamp)
-
+        const at = this.updatedAt
+        token.updatedAtBlockNumber = at.updatedAtBlockNumber
+        token.updatedAt = at.updatedAt
         await this.store.upsert(token)
     }
 }

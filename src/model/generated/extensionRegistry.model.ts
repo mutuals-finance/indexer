@@ -2,8 +2,8 @@ import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, S
 import {Account} from "./account.model"
 
 @Entity_()
-export class PoolFactory {
-    constructor(props?: Partial<PoolFactory>) {
+export class ExtensionRegistry {
+    constructor(props?: Partial<ExtensionRegistry>) {
         Object.assign(this, props)
     }
 
@@ -17,7 +17,7 @@ export class PoolFactory {
     chainId!: number
 
     @IntColumn_({nullable: false})
-    poolCount!: number
+    extensionCount!: number
 
     @StringColumn_({nullable: false})
     ownerId!: string

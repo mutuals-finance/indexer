@@ -1,6 +1,7 @@
 import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, StringColumn as StringColumn_, IntColumn as IntColumn_, ManyToOne as ManyToOne_, Index as Index_, DateTimeColumn as DateTimeColumn_, OneToMany as OneToMany_} from "@subsquid/typeorm-store"
 import {PoolFactory} from "./poolFactory.model"
 import {Account} from "./account.model"
+import {Claim} from "./claim.model"
 import {PoolDayBalance} from "./poolDayBalance.model"
 import {PoolHourBalance} from "./poolHourBalance.model"
 import {Deposit} from "./deposit.model"
@@ -44,21 +45,27 @@ export class Pool {
     @StringColumn_({nullable: false})
     logo!: string
 
-    @DateTimeColumn_({nullable: false})
-    timestamp!: Date
-
-    @IntColumn_({nullable: false})
-    blockNumber!: number
-
-    @IntColumn_({nullable: false})
-    txCount!: number
-
     @StringColumn_({nullable: false})
     ownerId!: string
 
     @Index_()
     @ManyToOne_(() => Account, {nullable: true})
     owner!: Account
+
+    @IntColumn_({nullable: false})
+    createdAtBlockNumber!: number
+
+    @IntColumn_({nullable: false})
+    updatedAtBlockNumber!: number
+
+    @DateTimeColumn_({nullable: false})
+    createdAt!: Date
+
+    @DateTimeColumn_({nullable: false})
+    updatedAt!: Date
+
+    @OneToMany_(() => Claim, e => e.pool)
+    claims!: Claim[]
 
     @OneToMany_(() => PoolDayBalance, e => e.pool)
     dayBalance!: PoolDayBalance[]

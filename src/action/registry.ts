@@ -1,15 +1,15 @@
 import {ZERO_ADDRESS} from '../utils/constants'
-import {Account, AccountType, Pool} from '../model'
+import {Extension} from '../model'
 import {CheckerDeferredValue, ContractChecker} from '../utils/contractChecker'
 import {Action, ActionConfig} from './base'
-import {ActionContext, IndexerContext} from "../interfaces";
+import {ActionContext} from "../interfaces";
 
 export interface CreateAccountActionData {
     accountId: string
     accountAddress: string
 }
 
-export class CreateAccountAction extends Action<CreateAccountActionData> {
+export class CreateExtensionAction extends Action<CreateAccountActionData> {
     private isContract!: CheckerDeferredValue
 
     constructor(ctx: ActionContext, config: ActionConfig, data: CreateAccountActionData) {
@@ -22,15 +22,9 @@ export class CreateAccountAction extends Action<CreateAccountActionData> {
     async perform() {
         const isContract = this.data.accountAddress === ZERO_ADDRESS ? true : await this.isContract.get()
 
-        const account = new Account({
-            id: this.data.accountId,
-            address: this.data.accountAddress,
-            accountType: isContract ? AccountType.Contract : AccountType.EOA,
-            ...this.updatedAt,
-            ...this.createdAt
-        })
+        const extension = new Extension()
 
-        await this.store.insert(account)
-        this.log.debug(`Account ${account.id} created`)
+        await this.store.insert(extension)
+        this.log.debug(`Account ${extension.id} created`)
     }
 }

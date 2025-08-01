@@ -1,28 +1,23 @@
 import {BlockHeader, Transaction} from '@subsquid/evm-processor'
-import {StoreWithCache} from '@belopash/typeorm-store'
-import {Logger} from '@subsquid/logger'
-import {Chain} from '@subsquid/evm-processor/lib/interfaces/chain'
+import {ActionContext} from "../interfaces";
 
 export type ActionBlock = Pick<BlockHeader, 'hash' | 'height' | 'timestamp'>
 export type ActionTransaction = Pick<Transaction, 'id' | 'hash'>
 
 export interface ActionConfig {
-    _chain: Chain
-    store: StoreWithCache
-    log: Logger
     block: ActionBlock
     transaction?: ActionTransaction
 }
 
 export abstract class Action<T> {
-    constructor(protected config: ActionConfig, readonly data: T) {}
+    constructor(protected ctx: ActionContext, protected config: ActionConfig, readonly data: T) {}
 
     protected get log() {
-        return this.config.log
+        return this.ctx.log
     }
 
     protected get store() {
-        return this.config.store
+        return this.ctx.store
     }
 
     get block() {
@@ -30,6 +25,24 @@ export abstract class Action<T> {
     }
 
     get transaction() {
+        return this.config.transaction
+    }
+
+    get createdAt() {
+        return {
+            createdAt: new Date(this.block.timestamp),
+            createdAtBlockNumber: this.block.height,
+        }
+    }
+
+    get updatedAt() {
+        return {
+            updatedAt: new Date(this.block.timestamp),
+            updatedAtBlockNumber: this.block.height,
+        }
+    }
+
+    get updateConfig() {
         return this.config.transaction
     }
 

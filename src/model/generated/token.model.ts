@@ -1,4 +1,4 @@
-import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, StringColumn as StringColumn_, IntColumn as IntColumn_, DateTimeColumn as DateTimeColumn_, BigIntColumn as BigIntColumn_} from "@subsquid/typeorm-store"
+import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, StringColumn as StringColumn_, IntColumn as IntColumn_, BooleanColumn as BooleanColumn_, DateTimeColumn as DateTimeColumn_} from "@subsquid/typeorm-store"
 
 @Entity_()
 export class Token {
@@ -15,12 +15,6 @@ export class Token {
     @IntColumn_({nullable: false})
     chainId!: number
 
-    @DateTimeColumn_({nullable: false})
-    timestamp!: Date
-
-    @IntColumn_({nullable: false})
-    blockNumber!: number
-
     @StringColumn_({nullable: false})
     symbol!: string
 
@@ -30,12 +24,27 @@ export class Token {
     @IntColumn_({nullable: false})
     decimals!: number
 
-    @BigIntColumn_({nullable: false})
-    totalSupply!: bigint
+    @StringColumn_({nullable: true})
+    logo!: string | undefined | null
+
+    @StringColumn_({nullable: true})
+    thumbnail!: string | undefined | null
+
+    @IntColumn_({nullable: true})
+    validated!: number | undefined | null
+
+    @BooleanColumn_({nullable: true})
+    possibleSpam!: boolean | undefined | null
 
     @IntColumn_({nullable: false})
-    txCount!: number
+    createdAtBlockNumber!: number
 
-    @BigIntColumn_({nullable: false})
-    poolCount!: bigint
+    @IntColumn_({nullable: false})
+    updatedAtBlockNumber!: number
+
+    @DateTimeColumn_({nullable: false})
+    createdAt!: Date
+
+    @DateTimeColumn_({nullable: false})
+    updatedAt!: Date
 }

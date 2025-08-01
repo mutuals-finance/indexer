@@ -1,4 +1,4 @@
-import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, DateTimeColumn as DateTimeColumn_, StringColumn as StringColumn_, ManyToOne as ManyToOne_, Index as Index_, BigIntColumn as BigIntColumn_} from "@subsquid/typeorm-store"
+import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, DateTimeColumn as DateTimeColumn_, StringColumn as StringColumn_, ManyToOne as ManyToOne_, Index as Index_, BigIntColumn as BigIntColumn_, IntColumn as IntColumn_} from "@subsquid/typeorm-store"
 import {Pool} from "./pool.model"
 import {Token} from "./token.model"
 
@@ -31,9 +31,15 @@ export class PoolDayBalance {
     @BigIntColumn_({nullable: false})
     amount!: bigint
 
-    @BigIntColumn_({nullable: false})
-    timestamp!: bigint
+    @IntColumn_({nullable: false})
+    createdAtBlockNumber!: number
 
-    @BigIntColumn_({nullable: false})
-    blockNumber!: bigint
+    @IntColumn_({nullable: false})
+    updatedAtBlockNumber!: number
+
+    @DateTimeColumn_({nullable: false})
+    createdAt!: Date
+
+    @DateTimeColumn_({nullable: false})
+    updatedAt!: Date
 }

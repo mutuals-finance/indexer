@@ -1,4 +1,4 @@
-import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, DateTimeColumn as DateTimeColumn_, IntColumn as IntColumn_, BigIntColumn as BigIntColumn_, OneToMany as OneToMany_} from "@subsquid/typeorm-store"
+import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, BigIntColumn as BigIntColumn_, IntColumn as IntColumn_, DateTimeColumn as DateTimeColumn_, OneToMany as OneToMany_} from "@subsquid/typeorm-store"
 import {Deposit} from "./deposit.model"
 import {Withdrawal} from "./withdrawal.model"
 
@@ -11,17 +11,23 @@ export class Tx {
     @PrimaryColumn_()
     id!: string
 
-    @DateTimeColumn_({nullable: false})
-    timestamp!: Date
-
-    @IntColumn_({nullable: false})
-    blockNumber!: number
-
     @BigIntColumn_({nullable: false})
     gasUsed!: bigint
 
     @BigIntColumn_({nullable: false})
     gasPrice!: bigint
+
+    @IntColumn_({nullable: false})
+    createdAtBlockNumber!: number
+
+    @IntColumn_({nullable: false})
+    updatedAtBlockNumber!: number
+
+    @DateTimeColumn_({nullable: false})
+    createdAt!: Date
+
+    @DateTimeColumn_({nullable: false})
+    updatedAt!: Date
 
     @OneToMany_(() => Deposit, e => e.transaction)
     deposits!: Deposit[]

@@ -1,58 +1,72 @@
-import { StoreWithCache, TypeormDatabaseWithCache } from '@belopash/typeorm-store'
+import { TypeormDatabaseWithCache } from '@belopash/typeorm-store'
 import { ActionQueue } from './action/actionQueue'
-import { MappingContext } from './interfaces'
+import {IndexerContext} from './interfaces'
 import { Item } from './mapping/common'
-import {Block, BlockData, makeProcessor} from "./processor";
-import { PoolManager } from './utils/manager'
-import {getTokenActions} from "./mapping/token";
+import {BlockData, makeProcessor, ProcessorContext} from "./processor";
 import {getPoolFactoryActions} from "./mapping/poolFactory";
-import assert from "assert";
-import {networkConfig} from "./networkConfig";
+import {initNetworkConfig} from "./utils/network";
+import {getTokenActions} from "./mapping/token";
+import {IPFSService, MoralisService, ServiceContext} from "./services";
+import {IPFS_GATEWAY, MORALIS_API_KEY} from "./utils/constants";
 
-assert(
-    networkConfig.hasOwnProperty(process.argv[2]),
-    `Processor executable takes one argument - a network string ID - ` +
-    `that must be in ${JSON.stringify(Object.keys(networkConfig))}. Got "${
-        process.argv[2]
-    }".`
-);
+const config = initNetworkConfig(process.argv[2])
 
-const network = process.argv[2];
-const config = networkConfig[network];
+const run = async ()=> {
+    const processor = makeProcessor(config);
 
-const processor = makeProcessor(config);
+    const database = makeDatabase()
+    const service = await makeServices()
+    const handler = makeHandler(service)
 
-const database = new TypeormDatabaseWithCache({
-    supportHotBlocks: true,
-    stateSchema: `${config.chainTag}_processor`,
-    isolationLevel: "READ COMMITTED",
-});
+    processor.run(database, handler)
+}
 
-processor.run(database,
-    async (ctx) => {
-    const queue = new ActionQueue({
-        _chain: ctx._chain,
-        log: ctx.log,
-        store: ctx.store,
+function makeDatabase() {
+    return new TypeormDatabaseWithCache({
+        supportHotBlocks: true,
+        stateSchema: `${config.chainTag}_processor`,
+        isolationLevel: "READ COMMITTED",
+    });
+}
+
+async function makeServices() {
+    const ipfsService = IPFSService.init({
+        gateway: IPFS_GATEWAY,
+        retryAttempts: 3,
+        agent: { timeout: 10000 }
     })
 
-    await PoolManager.get(ctx).init()
+    const moralisService = await MoralisService.init({
+        apiKey: MORALIS_API_KEY,
+        defaultEvmApiChain: config.chainId
+    })
 
-    for (let block of ctx.blocks) {
-        queue.setBlock(block.header)
-        const items = orderItems(block)
+    return { ipfsService, moralisService }
+}
 
-        for (let item of items) {
-            const tx = item.kind === 'log' ? item.value.transaction : item.value
-            queue.setTransaction(tx)
+function makeHandler(service: ServiceContext) {
+    return async (processor: ProcessorContext) => {
+        let action = {...service, ...processor}
 
-            processItem({ ...ctx, queue }, item)
+        const queue = new ActionQueue(action)
+        const ctx = {...action, queue}
+
+        for (let block of ctx.blocks) {
+            ctx.queue.setBlock(block.header)
+            const items = orderItems(block)
+
+            for (let item of items) {
+                const tx = item.kind === 'log' ? item.value.transaction : item.value
+                ctx.queue.setTransaction(tx)
+
+                processItem(ctx, item)
+            }
         }
-    }
 
-    await queue.process()
-    await ctx.store.flush()
-})
+        await ctx.queue.process()
+        await ctx.store.flush()
+    }
+}
 
 function orderItems(block: BlockData) {
     const items: Item[] = []
@@ -90,10 +104,12 @@ function orderItems(block: BlockData) {
     return items
 }
 
-function processItem(ctx: MappingContext<StoreWithCache>, item: Item) {
-    // getTokenActions(ctx, item)
+function processItem(ctx: IndexerContext, item: Item) {
+    getTokenActions(ctx, item)
     getPoolFactoryActions(ctx, item)
 }
+
+void run()
 
 export {
     config,

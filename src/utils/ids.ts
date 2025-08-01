@@ -1,5 +1,9 @@
 import { config } from "../main";
 
+export const createClaimId = (poolAddress: string, claimId: string) => {
+    return `${config.chainId}-${poolAddress}-${claimId}`;
+};
+
 export const createPoolFactoryId = (poolFactoryAddress: string) => {
     return `${config.chainId}-${poolFactoryAddress}`;
 };

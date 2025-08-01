@@ -1,5 +1,5 @@
 import {BigDecimal} from "@subsquid/big-decimal"
-import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, IntColumn as IntColumn_, StringColumn as StringColumn_, ManyToOne as ManyToOne_, Index as Index_, BigDecimalColumn as BigDecimalColumn_} from "@subsquid/typeorm-store"
+import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, IntColumn as IntColumn_, StringColumn as StringColumn_, ManyToOne as ManyToOne_, Index as Index_, BigDecimalColumn as BigDecimalColumn_, DateTimeColumn as DateTimeColumn_} from "@subsquid/typeorm-store"
 import {Token} from "./token.model"
 import {Account} from "./account.model"
 
@@ -31,4 +31,16 @@ export class TokenBalance {
 
     @BigDecimalColumn_({nullable: false})
     amount!: BigDecimal
+
+    @IntColumn_({nullable: false})
+    createdAtBlockNumber!: number
+
+    @IntColumn_({nullable: false})
+    updatedAtBlockNumber!: number
+
+    @DateTimeColumn_({nullable: false})
+    createdAt!: Date
+
+    @DateTimeColumn_({nullable: false})
+    updatedAt!: Date
 }

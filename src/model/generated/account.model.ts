@@ -1,5 +1,7 @@
-import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, StringColumn as StringColumn_, DateTimeColumn as DateTimeColumn_, IntColumn as IntColumn_, BooleanColumn as BooleanColumn_, Index as Index_, OneToMany as OneToMany_} from "@subsquid/typeorm-store"
+import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, StringColumn as StringColumn_, OneToMany as OneToMany_, IntColumn as IntColumn_, DateTimeColumn as DateTimeColumn_} from "@subsquid/typeorm-store"
+import {AccountType} from "./_accountType"
 import {Pool} from "./pool.model"
+import {Claim} from "./claim.model"
 import {TokenBalance} from "./tokenBalance.model"
 
 @Entity_()
@@ -14,22 +16,27 @@ export class Account {
     @StringColumn_({nullable: false})
     address!: string
 
-    @DateTimeColumn_({nullable: false})
-    timestamp!: Date
-
-    @IntColumn_({nullable: false})
-    blockNumber!: number
-
-    @Index_()
-    @BooleanColumn_({nullable: false})
-    isEOA!: boolean
-
-    @IntColumn_({nullable: false})
-    txCount!: number
+    @Column_("varchar", {length: 8, nullable: false})
+    accountType!: AccountType
 
     @OneToMany_(() => Pool, e => e.account)
-    pools!: Pool[]
+    selfPools!: Pool[]
+
+    @OneToMany_(() => Claim, e => e.recipient)
+    claims!: Claim[]
 
     @OneToMany_(() => TokenBalance, e => e.holder)
     balances!: TokenBalance[]
+
+    @IntColumn_({nullable: false})
+    createdAtBlockNumber!: number
+
+    @IntColumn_({nullable: false})
+    updatedAtBlockNumber!: number
+
+    @DateTimeColumn_({nullable: false})
+    createdAt!: Date
+
+    @DateTimeColumn_({nullable: false})
+    updatedAt!: Date
 }

@@ -1,14 +1,13 @@
 import {StoreWithCache} from '@belopash/typeorm-store'
 import * as poolFactoryAbi from '../abi/PoolFactory'
-import {MappingContext} from '../interfaces'
+import {IndexerContext} from '../interfaces'
 import {Account, PoolFactory} from '../model'
-import {PoolManager} from '../utils/manager/poolManager'
 import {Item} from './common'
 import {createAccountId, createPoolFactoryId, createPoolId} from "../utils/ids";
 import {Log} from "@subsquid/evm-processor";
 import {config} from "../main";
 
-export function getPoolFactoryActions(ctx: MappingContext<StoreWithCache>, item: Item) {
+export function getPoolFactoryActions(ctx: IndexerContext, item: Item) {
     if (item.address !== config.poolFactory) return
 
     switch (item.kind) {
@@ -27,9 +26,8 @@ export function getPoolFactoryActions(ctx: MappingContext<StoreWithCache>, item:
     }
 }
 
-function handlePoolCreated(ctx: MappingContext<StoreWithCache>, log: Log) {
+function handlePoolCreated(ctx: IndexerContext, log: Log) {
     const event = poolFactoryAbi.events.PoolCreated.decode(log)
-
     const ownerAddress = event.owner.toLowerCase()
     const ownerId = createAccountId(ownerAddress)
     const ownerDeferred = ctx.store.defer(Account, ownerId)
@@ -56,19 +54,21 @@ function handlePoolCreated(ctx: MappingContext<StoreWithCache>, log: Log) {
                 })
             }
         })
-        .lazy(async () => {
-            // TODO add recipients as accounts
-        })
         .add('pool_create', {
             poolAddress,
             ownerId,
             poolFactoryId,
         })
+        .add('claim_createBatch', {
+            poolId,
+            extensions: event.extensions,
+            data: event.data
+        })
 
     //PoolManager.get(ctx).addPool(log.address, poolId)
 }
 
-function handleOwnershipTransferred(ctx: MappingContext<StoreWithCache>, log: Log) {
+function handleOwnershipTransferred(ctx: IndexerContext, log: Log) {
     const event = poolFactoryAbi.events.OwnershipTransferred.decode(log)
 
     const poolFactoryAddress = config.poolFactory.toLowerCase()

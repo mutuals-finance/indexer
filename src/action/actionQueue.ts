@@ -8,6 +8,10 @@ import * as PoolFactory from './poolFactory'
 import * as Pool from './pool'
 import * as Token from './token'
 import * as Account from './account'
+import * as Claim from './claim'
+import {CreateClaimBatchAction} from "./claim";
+import {ActionContext} from "../interfaces";
+import {ServiceContext} from "../services";
 
 const Actions = {
     account_create: Account.CreateAccountAction,
@@ -17,6 +21,8 @@ const Actions = {
     poolFactory_updateOwner: PoolFactory.UpdateOwnerPoolFactoryAction,
 
     pool_create: Pool.CreatePoolAction,
+
+    claim_createBatch: Claim.CreateClaimBatchAction,
 
     token_create: Token.CreateTokenAction,
     token_transfer: Token.TransferTokenAction,
@@ -30,7 +36,7 @@ export class ActionQueue {
     private block: ActionBlock | undefined
     private transaction: ActionTransaction | undefined
 
-    constructor(private config: { _chain: Chain; store: StoreWithCache; log: Logger }) { }
+    constructor(private ctx: ActionContext) { }
 
     get size() {
         return this.actions.length
@@ -60,8 +66,8 @@ export class ActionQueue {
         }
 
         const a = new ActionConstructor(
+            this.ctx,
             {
-                ...this.config,
                 block: this.block,
                 transaction: this.transaction,
             },
@@ -76,8 +82,8 @@ export class ActionQueue {
         assert(this.block != null)
 
         const a = new LazyAction(
+            this.ctx,
             {
-                ...this.config,
                 block: this.block,
                 transaction: this.transaction,
             },
@@ -129,8 +135,8 @@ export class ActionQueue {
 }
 
 class LazyAction extends Action<unknown> {
-    constructor(protected config: ActionConfig, readonly cb: () => void | PromiseLike<void>) {
-        super(config, {})
+    constructor(protected ctx: ActionContext, protected config: ActionConfig, readonly cb: () => void | PromiseLike<void>) {
+        super(ctx, config, {})
     }
 
     async perform(): Promise<void> {

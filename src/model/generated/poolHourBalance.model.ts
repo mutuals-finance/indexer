@@ -34,9 +34,15 @@ export class PoolHourBalance {
     @BigIntColumn_({nullable: false})
     amount!: bigint
 
-    @BigIntColumn_({nullable: false})
-    timestamp!: bigint
+    @IntColumn_({nullable: false})
+    createdAtBlockNumber!: number
 
-    @BigIntColumn_({nullable: false})
-    blockNumber!: bigint
+    @IntColumn_({nullable: false})
+    updatedAtBlockNumber!: number
+
+    @DateTimeColumn_({nullable: false})
+    createdAt!: Date
+
+    @DateTimeColumn_({nullable: false})
+    updatedAt!: Date
 }

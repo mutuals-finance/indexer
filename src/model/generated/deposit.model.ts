@@ -1,4 +1,4 @@
-import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, StringColumn as StringColumn_, ManyToOne as ManyToOne_, Index as Index_, DateTimeColumn as DateTimeColumn_, BigIntColumn as BigIntColumn_, IntColumn as IntColumn_} from "@subsquid/typeorm-store"
+import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, StringColumn as StringColumn_, ManyToOne as ManyToOne_, Index as Index_, BigIntColumn as BigIntColumn_, IntColumn as IntColumn_, DateTimeColumn as DateTimeColumn_} from "@subsquid/typeorm-store"
 import {Tx} from "./tx.model"
 import {Pool} from "./pool.model"
 import {Token} from "./token.model"
@@ -18,9 +18,6 @@ export class Deposit {
     @Index_()
     @ManyToOne_(() => Tx, {nullable: true})
     transaction!: Tx
-
-    @DateTimeColumn_({nullable: false})
-    timestamp!: Date
 
     @StringColumn_({nullable: false})
     poolId!: string
@@ -50,4 +47,16 @@ export class Deposit {
 
     @IntColumn_({nullable: true})
     logIndex!: number | undefined | null
+
+    @IntColumn_({nullable: false})
+    createdAtBlockNumber!: number
+
+    @IntColumn_({nullable: false})
+    updatedAtBlockNumber!: number
+
+    @DateTimeColumn_({nullable: false})
+    createdAt!: Date
+
+    @DateTimeColumn_({nullable: false})
+    updatedAt!: Date
 }

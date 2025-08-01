@@ -38,9 +38,8 @@ export const makeProcessor = (config: NetworkConfig)=> new EvmBatchProcessor()
         input: true,
       },
     })
-    .addLog({
-        topic0: [erc20Abi.events.Transfer.topic],
-        transaction: true,
+    .addTransaction({
+        sighash:[erc20Abi.functions.transfer.sighash],
     })
     .addLog({
       address: [config.poolFactory],
@@ -53,4 +52,4 @@ export type BlockData = _BlockData<Fields>
 export type Block = BlockHeader<Fields>
 export type Log = _Log<Fields>
 export type Transaction = _Transaction<Fields>
-export type ProcessorContext<Store> = DataHandlerContext<Store, Fields>
+export type ProcessorContext<Store = any> = DataHandlerContext<Store, Fields>

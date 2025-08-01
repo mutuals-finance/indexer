@@ -1,22 +1,29 @@
+enum AccountType {
+  EOA
+  Contract
+}
+
 type Account @entity {
   # account address
   id: ID!
   # account address
   address: String!
-  # creation timestamp
-  timestamp: DateTime!
-  # creation block number
-  blockNumber: Int!
   # contract or EOA
-  isEOA: Boolean! @index
-  # all time number of transactions
-  txCount: Int!
+  accountType: AccountType!
   # pools this account represents if account is a pool contract
-  pools: [Pool!] @derivedFrom(field: "account")
-  # pools where account is a recipient
-  # pools: [Pool!] @derivedFrom(field: "recipient")
+  selfPools: [Pool!] @derivedFrom(field: "account")
+  # claims where account is a recipient
+  claims: [Claim!] @derivedFrom(field: "recipient")
   # token balances of the account
   balances: [TokenBalance!] @derivedFrom(field: "holder")
+  # creation block number
+  createdAtBlockNumber: Int!
+  # update block number
+  updatedAtBlockNumber: Int!
+  # creation timestamp
+  createdAt: DateTime!
+  # update timestamp
+  updatedAt: DateTime!
 }
 
 type PoolFactory @entity {
@@ -26,17 +33,108 @@ type PoolFactory @entity {
   address: String!
   # chain ID
   chainId: Int!
-  # creation timestamp
-  timestamp: DateTime!
-  # creation block number
-  blockNumber: Int!
   # amount of pools created
   poolCount: Int!
-  # amount of transactions all time
-  txCount: Int!
   # current owner of the factory
   ownerId: ID!
   owner: Account!
+  # creation block number
+  createdAtBlockNumber: Int!
+  # update block number
+  updatedAtBlockNumber: Int!
+  # creation timestamp
+  createdAt: DateTime!
+  # update timestamp
+  updatedAt: DateTime!
+}
+
+type ExtensionRegistry @entity {
+  # { chain id }-{ contract address }
+  id: ID!
+  # contract address
+  address: String!
+  # chain ID
+  chainId: Int!
+  # amount of extensions created
+  extensionCount: Int!
+  # current owner of the registry
+  ownerId: ID!
+  owner: Account!
+  # creation block number
+  createdAtBlockNumber: Int!
+  # update block number
+  updatedAtBlockNumber: Int!
+  # creation timestamp
+  createdAt: DateTime!
+  # update timestamp
+  updatedAt: DateTime!
+}
+
+enum ExtensionType {
+  State
+  Strategy
+}
+
+type Extension @entity {
+  # { chain id }-{ pool address }
+  id: ID!
+  # pool address
+  address: String!
+  # chain ID
+  chainId: Int!
+  # extension registry that created this pool
+  extensionRegistryId: ID!
+  extensionRegistry: ExtensionRegistry!
+  # extension id of functionality (unspecific of chain)
+  extensionId: String!
+  # type of the extension
+  extensionType: ExtensionType!
+  # array of call signatures that this extension supports
+  permissions: [String!]
+  # JSON data of the extension
+  data: JSON
+  # name
+  name: String!
+  # description
+  description: String!
+  # creation block number
+  createdAtBlockNumber: Int!
+  # update block number
+  updatedAtBlockNumber: Int!
+  # creation timestamp
+  createdAt: DateTime!
+  # update timestamp
+  updatedAt: DateTime!
+}
+
+type Claim @entity {
+  # { claim id }
+  id: ID!
+  # allocated value
+  value: BigInt!
+  # parent claim
+  parentId: ID
+  parent: Claim
+  # pool
+  poolId: ID!
+  pool: Pool!
+  # recipient
+  recipientId: ID
+  recipient: Account
+  # state
+  stateId: ID!
+  state: Extension!
+  # strategy
+  strategyId: ID!
+  strategy: Extension!
+  # creation block number
+  createdAtBlockNumber: Int!
+  # update block number
+  updatedAtBlockNumber: Int!
+  # creation timestamp
+  createdAt: DateTime!
+  # update timestamp
+  updatedAt: DateTime!
 }
 
 type TokenBalance @entity {
@@ -52,6 +150,14 @@ type TokenBalance @entity {
   holder: Account!
   # token balance
   amount: BigDecimal!
+  # creation block number
+  createdAtBlockNumber: Int!
+  # update block number
+  updatedAtBlockNumber: Int!
+  # creation timestamp
+  createdAt: DateTime!
+  # update timestamp
+  updatedAt: DateTime!
 }
 
 type Token @entity {
@@ -61,22 +167,28 @@ type Token @entity {
   address: String!
   # chain ID
   chainId: Int!
-  # creation timestamp
-  timestamp: DateTime!
-  # creation block number
-  blockNumber: Int!
   # token symbol
   symbol: String!
   # token name
   name: String!
   # token decimals
   decimals: Int!
-  # token total supply
-  totalSupply: BigInt!
-  # transactions across all pools that include this token
-  txCount: Int!
-  # number of pools containing this token
-  poolCount: BigInt!
+  # token logo
+  logo: String
+  # token thumbnail
+  thumbnail: String
+  # if token details have been validated
+  validated: Int
+  # if possibly a spam token
+  possibleSpam: Boolean
+  # creation block number
+  createdAtBlockNumber: Int!
+  # update block number
+  updatedAtBlockNumber: Int!
+  # creation timestamp
+  createdAt: DateTime!
+  # update timestamp
+  updatedAt: DateTime!
 }
 
 type Pool @entity {
@@ -98,15 +210,19 @@ type Pool @entity {
   description: String!
   # logo
   logo: String!
-  # creation timestamp
-  timestamp: DateTime!
-  # creation block number
-  blockNumber: Int!
-  # all time number of transactions
-  txCount: Int!
   # current owner of the factory
   ownerId: ID!
   owner: Account!
+  # creation block number
+  createdAtBlockNumber: Int!
+  # update block number
+  updatedAtBlockNumber: Int!
+  # creation timestamp
+  createdAt: DateTime!
+  # update timestamp
+  updatedAt: DateTime!
+  # pool claims
+  claims: [Claim!] @derivedFrom(field: "pool")
   # daily snapshots of pool token balances
   dayBalance: [PoolDayBalance!]! @derivedFrom(field: "pool")
   # hourly snapshots of pool token balances
@@ -120,13 +236,17 @@ type Pool @entity {
 type Tx @entity {
   # txn hash
   id: ID!
-  # creation timestamp
-  timestamp: DateTime!
-  # creation block number
-  blockNumber: Int!
   # gas used during txn execution
   gasUsed: BigInt!
   gasPrice: BigInt!
+  # creation block number
+  createdAtBlockNumber: Int!
+  # update block number
+  updatedAtBlockNumber: Int!
+  # creation timestamp
+  createdAt: DateTime!
+  # update timestamp
+  updatedAt: DateTime!
   # derived values
   deposits: [Deposit]! @derivedFrom(field: "transaction")
   withdrawals: [Withdrawal]! @derivedFrom(field: "transaction")
@@ -138,8 +258,6 @@ type Deposit @entity {
   # which txn the mint was included in
   transactionId: ID!
   transaction: Tx!
-  # time of txn
-  timestamp: DateTime!
   # pool that receives deposit
   poolId: ID!
   pool: Pool!
@@ -156,6 +274,14 @@ type Deposit @entity {
   amount: BigInt!
   # order within the txn
   logIndex: Int
+  # creation block number
+  createdAtBlockNumber: Int!
+  # update block number
+  updatedAtBlockNumber: Int!
+  # creation timestamp
+  createdAt: DateTime!
+  # update timestamp
+  updatedAt: DateTime!
 }
 
 type Withdrawal @entity {
@@ -170,8 +296,6 @@ type Withdrawal @entity {
   # allow indexing by tokens
   tokenId: ID!
   token: Token!
-  # need this to pull recent txns for specific token or pool
-  timestamp: DateTime!
   # sender of the withdrawal
   from: String!
   # recipient of the withdrawal
@@ -182,6 +306,14 @@ type Withdrawal @entity {
   amount: BigInt!
   # position within the transactions
   logIndex: Int
+  # creation block number
+  createdAtBlockNumber: Int!
+  # update block number
+  updatedAtBlockNumber: Int!
+  # creation timestamp
+  createdAt: DateTime!
+  # update timestamp
+  updatedAt: DateTime!
 }
 
 ###############################
@@ -200,10 +332,14 @@ type PoolDayBalance @entity {
   token: Token!
   # last token balance in token units
   amount: BigInt!
-  # timestamp in which the token balance was last modified
-  timestamp: BigInt!
-  # block number in which the token balance was last modified
-  blockNumber: BigInt!
+  # creation block number
+  createdAtBlockNumber: Int!
+  # update block number
+  updatedAtBlockNumber: Int!
+  # creation timestamp
+  createdAt: DateTime!
+  # update timestamp
+  updatedAt: DateTime!
 }
 
 type PoolHourBalance @entity {
@@ -221,8 +357,12 @@ type PoolHourBalance @entity {
   token: Token!
   # last token balance in token units
   amount: BigInt!
-  # timestamp in which the token balance was last modified
-  timestamp: BigInt!
-  # block number in which the token balance was last modified
-  blockNumber: BigInt!
+  # creation block number
+  createdAtBlockNumber: Int!
+  # update block number
+  updatedAtBlockNumber: Int!
+  # creation timestamp
+  createdAt: DateTime!
+  # update timestamp
+  updatedAt: DateTime!
 }

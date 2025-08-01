@@ -1,10 +1,7 @@
-import {ZERO_ADDRESS} from '../utils/constants'
-import {Account, Pool, PoolFactory} from '../model'
-import {CheckerDeferredValue, ContractChecker} from '../utils/contractChecker'
-import {Action, ActionConfig} from './base'
-import assert from 'assert'
+import {Account, PoolFactory} from '../model'
+import {Action} from './base'
 import {config} from "../main";
-import {createAccountId, createPoolFactoryId, createPoolId} from "../utils/ids";
+import {createAccountId, createPoolFactoryId} from "../utils/ids";
 
 export interface CreatePoolFactoryData {
     poolFactoryAddress: string
@@ -25,15 +22,16 @@ export class CreatePoolFactoryAction extends Action<CreatePoolFactoryData> {
             id: poolFactoryId,
             address: poolFactoryAddress,
             chainId: config.chainId,
-            timestamp: new Date(this.block.timestamp),
-            blockNumber: this.block.height,
             poolCount: 0,
-            txCount: 0,
             ownerId: ownerId,
             owner,
+            ...this.updatedAt,
+            ...this.createdAt
         })
 
         await this.store.insert(poolFactory)
+        this.log.debug(`Created pool factory ${poolFactory.id}`)
+
     }
 }
 
@@ -50,8 +48,11 @@ export class UpdateOwnerPoolFactoryAction extends Action<UpdateOwnerPoolFactoryD
 
         poolFactory.ownerId = this.data.newOwnerId
         poolFactory.owner = newOwner
-        poolFactory.timestamp = new Date(this.block.timestamp)
 
+        const at = this.updatedAt
+        poolFactory.updatedAtBlockNumber = at.updatedAtBlockNumber
+        poolFactory.updatedAt = at.updatedAt
         await this.store.upsert(poolFactory)
+        this.log.debug(`Update owner ${newOwner.id} for pool factory ${poolFactory.id}`)
     }
 }
